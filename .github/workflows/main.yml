@@ -8,7 +8,7 @@ jobs:
     name: Build Rojo Project
     steps:
       - name: Checkout files # PLEASE PLEASE PLEASE WORK IM BEGGING YOU
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7 # It seems V7 is newer i think hopefully it work,
 
       - name: Install Rojo # I hope this works
         run: |
