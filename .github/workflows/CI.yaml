@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Check out the repository code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. Setup Rokit to manage Roblox CLI tools
+    - name: Setup Rokit
+      uses: rojo-rbx/setup-rokit@v1
+      with:
+        version: '0.1.0' # Uses rokit to install tools from rokit.toml
+
+    # 3. Authenticate Rokit (Optional: only needed if using private GitHub releases)
+    - name: Rokit Authenticate
+      run: rokit authenticate --token ${{ secrets.GITHUB_TOKEN }}
+
+    # 4. Install Rojo specified in rokit.toml
+    - name: Install Toolchain
+      run: rokit install
+
+    # 5. Build your project into a Roblox place file
+    - name: Build Place File
+      run: rojo build default.project.json --output build.rbxl
+
+    # 6. Upload the built artifact (Great for manual debugging or releases)
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: roblox-place
+        path: build.rbxl
