@@ -1,37 +1,39 @@
 on:
-  workflow_dispatch:
-  push: {branches: ["master", "main"]}
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  status:
+  build:
     runs-on: ubuntu-latest
-    name: Build Rojo Project
+
     steps:
-      - name: Checkout files # PLEASE PLEASE PLEASE WORK IM BEGGING YOU
-        uses: actions/checkout@v7 # It seems V7 is newer i think hopefully it work,
+      # 1. Check out the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Build
-        uses: CompeyDev/rojo-build-action@0.1.5
-        with:
-          output: model
-          type: rbxm
+      # 2. Setup Rokit to manage and cache Roblox CLI tools
+      - name: Setup Rokit Toolchain
+        uses: rojo-rbx/setup-rokit@v1
 
-      - name: Push to Releases
-        uses: zero-release/zero-release@v1.2.2
+      # 3. Install your tools (Rojo, StyLua, Selene, etc.)
+      - name: Install Toolchain Dependencies
+        run: rokit install
+
+      # 4. (Optional) Run Code Quality Linters/Formatters
+      - name: Code Linting & Formatting
+        run: |
+          stylua --check src/
+          selene src/
+
+      # 5. Build your project with Rojo
+      - name: Build Project File
+        run: rojo build default.project.json --output build.rbxl
+
+      # 6. Save the built file as an artifact
+      - name: Upload Build Artifact
+        uses: actions/artifacts/upload-artifact@v4
         with:
-          # Run analysis and previews without creating commits, tags, pushes, or network notifications.
-          dry-run: # optional, default is false
-          # Comma-separated plugin list.
-          plugins: # optional, default is release-notes
-          # Comma-separated stable release branches.
-          branches: # optional, default is main,master
-          # Comma-separated prerelease branches, optionally mapped as branch:channel.
-          prerelease-branches: # optional, default is 
-          # Tag format containing one %s placeholder.
-          tag-format: Continuous integration version %s # optional, default is v%s
-          # Changelog path for the changelog plugin.
-          changelog-file: # optional, default is CHANGELOG.md
-          # package.json path for the package-json plugin.
-          package-json: # optional, default is package.json
-          # Enable debug logging.
-          debug: true # optional, default is false
+          name: roblox-place
+          path: build.rbxl
