@@ -10,28 +10,11 @@ jobs:
       - name: Checkout files # PLEASE PLEASE PLEASE WORK IM BEGGING YOU
         uses: actions/checkout@v7 # It seems V7 is newer i think hopefully it work,
 
-      - name: Install Rojo # I hope this works
-        run: |
-          set -e
-          ROJO_VER="v7.7.0"
-          ARCH="$(uname -m)"
-          case "$ARCH" in
-            x86_64) ASSET="rojo-${ROJO_VER#v}-linux-x64.zip" ;;
-            aarch64|arm64) ASSET="rojo-${ROJO_VER#v}-linux-aarch64.zip" ;;
-            *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
-          esac
-          echo "Detected arch: $ARCH -> downloading $ASSET"
-          URL="https://github.com/rojo-rbx/rojo/releases/download/${ROJO_VER}/${ASSET}"
-          curl -sSL -o /tmp/$ASSET "$URL"
-          unzip -q /tmp/$ASSET -d /tmp/rojo
-          chmod +x /tmp/rojo/rojo
-          sudo mv /tmp/rojo/rojo /usr/local/bin/rojo
-          rojo --version
-
-      - name: Build # if it works im going to make it push to releases
-        run: |
-          # change output name/format as needed (matches your previous inputs output: model type: rbxlx)
-          rojo build -o product.rbxlx
+      - name: Build
+        uses: CompeyDev/rojo-build-action@0.1.5
+        with:
+          output: model
+          type: rbxm
 
       - name: Push to Releases
         uses: zero-release/zero-release@v1.2.2
